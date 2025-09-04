@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'home_screen.dart';
+import 'screens/home_screen.dart';
 import 'models/character_model.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hive Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: buildAppTheme(),
       home: const HomeScreen(),
     );
   }

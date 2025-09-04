@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'models/character_model.dart';
+import '../models/character_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,21 +28,29 @@ class _HomeScreenState extends State<HomeScreen> {
     await showDialog<void>(
       context: context,
       builder: (context) {
+        final t = Theme.of(context).textTheme;
         return AlertDialog(
-          title: Text(existing == null ? 'Add Character' : 'Edit Character'),
+          title: Text(
+            existing == null ? 'Add Character' : 'Edit Character',
+            style: t.titleMedium,
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    hintText: 'e.g., Arthas',
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: classCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'Class (e.g., Warrior, Mage)',
+                    labelText: 'Class',
+                    hintText: 'e.g., Warrior, Mage',
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -79,7 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
 
                 if (existing == null) {
-                  // CREATE
                   final id = DateTime.now().millisecondsSinceEpoch
                       .toString(); // simple unique id
                   final model = CharacterModel(
@@ -90,7 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                   _box.put(model.id, model);
                 } else {
-                  // UPDATE (reuse same id)
                   final updated = CharacterModel(
                     id: existing.id,
                     name: name,
@@ -135,30 +141,61 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('My Fantasy Roster')),
       body: ValueListenableBuilder(
         valueListenable: _box.listenable(),
         builder: (context, Box<CharacterModel> box, _) {
           if (box.values.isEmpty) {
-            return const Center(
-              child: Text('No characters yet. Tap + to add.'),
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.group, size: 64, color: scheme.primary),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No characters yet',
+                      style: t.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Tap the + button to add your first hero.',
+                      style: t.bodyMedium?.copyWith(
+                        color: scheme.onSurface.withOpacity(0.7),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             );
           }
+
           final list = box.values.toList();
           return ListView.builder(
             itemCount: list.length,
             itemBuilder: (_, i) {
               final c = list[i];
-              return ListTile(
-                leading: const Icon(Icons.person),
-                title: Text(c.name),
-                subtitle: Text('${c.heroClass} · Power: ${c.power}'),
-                onTap: () => _openCharacterDialog(existing: c), // EDIT
-                trailing: SizedBox(
-                  width: 96,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+              return Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: scheme.primary.withOpacity(0.12),
+                    child: Icon(Icons.person, color: scheme.primary),
+                  ),
+                  title: Text(c.name, style: t.titleMedium),
+                  subtitle: Text(
+                    '${c.heroClass} · Power: ${c.power}',
+                    style: t.bodyMedium,
+                  ),
+                  onTap: () => _openCharacterDialog(existing: c), // EDIT
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         tooltip: 'Edit',
@@ -167,7 +204,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       IconButton(
                         tooltip: 'Delete',
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete),
+                        color: Colors.red.shade400,
                         onPressed: () => _confirmDelete(c),
                       ),
                     ],
